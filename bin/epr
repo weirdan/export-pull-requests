@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+require "bundler/setup"
+require "awesome_print"
 require "csv"
 require "optparse"
 require "time"
@@ -70,18 +72,22 @@ def bitbucket(user, repo)
 
       prs = $bitbucket.repos.pull_request.all(user, repo, :page => page, :state => $filter.upcase)
       prs["values"].each do |pr|
-        next if pr.author && skip_user?(pr.author.username)
+        next if pr.author && skip_user?(pr.author.nickname)
+        # ap pr, :indent => -2
+        # next
 
         rows << [
           repo_name,
           TYPE_PR,
           pr.id,
-          pr.author ? pr.author.username : no_user,
+          pr.author ? pr.author.nickname : no_user,
           pr.title,
           pr.state,
           localtime(pr.created_on),
           localtime(pr.updated_on),
-          pr["links"].html.href
+          pr["links"].html.href,
+          pr.source.branch.name,
+          pr.destination.branch.name
         ]
       end
 
